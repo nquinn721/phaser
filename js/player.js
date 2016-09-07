@@ -2,8 +2,20 @@ function Player(playerObj) {
 	this.x = playerObj.x;
 	this.y = playerObj.y;
 	this.id = playerObj.id;
+	this.username = playerObj.username;
 	this.sprite = game.add.sprite(this.x, this.y, 'player');
     game.physics.enable( this.sprite, Phaser.Physics.ARCADE);
+    console.log(this.username);
+
+    var style = { 
+    	font: "12px Arial", 
+    	fill: "#ffffff", 
+   	};
+
+	var text = game.add.text(0, 0, this.username, style);
+    text.anchor.set(1, 3);
+   	this.sprite.addChild(text);
+   	text.setScaleMinMax(1, 2);
 }
 
 Player.prototype = {
@@ -33,6 +45,8 @@ Player.prototype = {
 	    bmd.ctx.fill();
 	    var sp = game.make.sprite(offsetX || 0, offsetY || -35, bmd);
 	    sp.anchor.setTo(.5, .5);
+	   	sp.setScaleMinMax(1, 2);
+
 	    return p.addChild(sp);
 	},
 	createWeapon : function(owner) {

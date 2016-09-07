@@ -12,10 +12,10 @@ app.get('/', function (req, res) {
 });
 var users = [];
 io.on('connection', function (socket) {
-	socket.on('game', function() {
-		this.user = {id : socket.id, x : (users.length * 100) + 100, y : 550};
+	socket.on('game', function(username) {
+		this.user = {id : socket.id, x : (users.length * 100) + 100, y : 550, username : username};
 		users.push(this.user);
-		this.emit('connected', socket.user);
+		this.emit('connected', this.user);
 		this.emit('users', getUsersExceptSocket(this));
 		this.broadcast.emit('users', [this.user]);
 		
@@ -32,8 +32,8 @@ io.on('connection', function (socket) {
 		this.broadcast.emit('kill player', id);
 	});
 	socket.on('disconnect', function() {
-		// users.splice(users.indexOf(socket.user), 1);
-		// this.broadcast.emit('disconnected', this.id);
+		users.splice(users.indexOf(socket.user), 1);
+		this.broadcast.emit('disconnected', this.id);
 	});
 	
 });
