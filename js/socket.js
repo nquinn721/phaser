@@ -1,34 +1,45 @@
 var socket = io();
+function Sockets() {
+    
+}
 
-socket.on('move', function(pl, dir) {
-    pl = getPlayerById(pl.id);
-    move(pl, dir);
-});
-socket.on('fire', function(pl, pointer) {
-    pl = getPlayerById(pl.id);
-    if(pl)
-        fire(pl, pointer);
-});
+Sockets.prototype = {
+    init : function() {
+        socket.on('move', this.handleSocketEvent.bind(this, 'move'));
+        socket.on('fire', this.handleSocketEvent.bind(this, 'fire'));
+        socket.on('kill player', this.handleSocketEvent.bind(this, 'killPlayer'));
+        socket.on('users', this.handleSocketEvent.bind(this, 'users'));
+        socket.on('disconnected', this.handleSocketEvent.bind(this, 'disconnected'));
+    },
+    handleSocketEvent : function(event) {
+        if(typeof playerManager === 'undefined')return;
+        var args = [].splice.call(arguments, 1);
+        this[event].apply(this, args);
+    },
+    move : function(pl, dir) {
+        pl = playerManager.getPlayerById(pl.id);
+        if(pl)
+            pl.move(dir);
+    },
+    fire : function(pl, pointer) {
+        pl = playerManager.getPlayerById(pl.id);
+        if(pl)
+            pl.fire(pointer);
+    },
 
-socket.on('kill player', function(id) {
-    killPlayer(id);
-});
+    killPlayer : function(id) {
+        playerManager.killPlayer(id);
+    },
 
-socket.on('disconnected', function(id) {
-   killPlayer(id); 
-});
-socket.on('users', function(users) {
-    // console.log(users);
-    for(var i = 0; i < users.length; i++){
-        var p = createPlayer(users[i]);
-        p.bringToTop();
-        players.push(p);
+    disconnected : function(id) {
+        playerManager.killPlayer(id); 
+    },
+    users : function(users) {
+        for(var i = 0; i < users.length; i++){
+            playerManager.createOtherPlayer(users[i]);
+        }
     }
-});
 
-socket.on('connected', function(user) {
-    var p = createPlayer(user);
-    p.bringToTop();
-    player = p;
-
-});
+}
+var sockets = new Sockets;
+sockets.init();

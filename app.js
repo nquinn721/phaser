@@ -14,11 +14,12 @@ var users = [];
 io.on('connection', function (socket) {
 	socket.on('game', function(username) {
 		this.user = {id : socket.id, x : (users.length * 100) + 100, y : 550, username : username};
+		this.emit('player', this.user);
 		users.push(this.user);
-		this.emit('connected', this.user);
+	});
+	socket.on('creating', function() {
 		this.emit('users', getUsersExceptSocket(this));
 		this.broadcast.emit('users', [this.user]);
-		
 	});
 	socket.on('move', function(dir) {
 		this.broadcast.emit('move', this.user, dir);
@@ -32,8 +33,11 @@ io.on('connection', function (socket) {
 		this.broadcast.emit('kill player', id);
 	});
 	socket.on('disconnect', function() {
-		users.splice(users.indexOf(socket.user), 1);
-		this.broadcast.emit('disconnected', this.id);
+		console.log('disconnect', socket.user);
+		if(socket.user){
+			users.splice(users.indexOf(socket.user), 1);
+			this.broadcast.emit('disconnected', this.id);
+		}
 	});
 	
 });
