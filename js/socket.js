@@ -10,6 +10,7 @@ Sockets.prototype = {
         socket.on('kill player', this.handleSocketEvent.bind(this, 'killPlayer'));
         socket.on('users', this.handleSocketEvent.bind(this, 'users'));
         socket.on('disconnected', this.handleSocketEvent.bind(this, 'disconnected'));
+        socket.on('player position', this.handleSocketEvent.bind(this, 'playerPosition'));
     },
     handleSocketEvent : function(event) {
         if(typeof playerManager === 'undefined')return;
@@ -38,6 +39,9 @@ Sockets.prototype = {
         for(var i = 0; i < users.length; i++){
             playerManager.createOtherPlayer(users[i]);
         }
+    },
+    playerPosition : function(player, position) {
+        playerManager.updatePlayer(player, position);
     }
 
 }

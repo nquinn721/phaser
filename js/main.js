@@ -1,35 +1,59 @@
-var username, game;
+var username, game, VOLUME = 0.3;
 $('.login input').on('keyup', function(e) {
+    
     if(e.keyCode === 13){
+        if($(this).val() === ""){
+            $('.login-failed').show();
+            return;
+        }
         username = $(this).val();
         socket.emit('game', username);
         $('.splash').hide();
     }
 }).focus();
+$('.pause').on('click', function() {
+    // player.puaseMusic();
+    var players = playerManager.allPlayers;
+    for(var i = 0; i < players.length; i++)
+        players[i].puaseMusic();
+    puaseMusic();
+});
 var playerManager;
 socket.on('player', function(user) {
-    game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-example', { preload: preload, create: create, update: update, render: render });
+    game = new Phaser.Game(1200, 700, Phaser.AUTO, 'wrapper', { preload: preload, create: create, update: update, render: render });
     playerManager = new PlayerManager(game);
     player = user;
 
 
 });
 function preload() {
+    game.load.tilemap('map', 'tilemaps/main.csv');
+    game.load.image('tiles', 'tilemaps/tiles.jpg');
 
-    game.load.image('bullet', 'img/shmup-bullet.png');
+    game.load.image('bullet', 'img/bullet.png');
+    game.load.image('missle', 'img/missle.png');
+
     game.load.image('ship', 'img/thrust_ship.png');
     game.load.image('floor', 'img/floor.jpg');
     game.load.image('hp', 'img/health.png');
     game.load.spritesheet('player', 'img/mummy.png', 37, 45, 18);
+    game.load.audio('laser', ['sound/laser.mp3', 'sound/laser.ogg']);
+    game.load.audio('missle', ['sound/missle.mp3', 'sound/missle.ogg']);
+    game.load.audio('jump', ['sound/jump.mp3', 'sound/jump.ogg']);
+    game.load.audio('hitplayer', ['sound/hitplayer.mp3', 'sound/hitplayer.ogg']);
+    game.load.audio('bgmusic', ['sound/bgmusic.mp3', 'sound/bgmusic.ogg']);
+    game.load.audio('gameover', ['sound/gameover.mp3', 'sound/gameover.ogg']);
 }
 
 var cursors;
 var fireButton;
 var players = [];
 var player;
+var bgmusic, gameover;
+var map;
 
 var floors = [];
-var standing, walking, walkingLeft, walkingRight, jumping;
+var standing, walking, walkingLeft, walkingRight, jumping, moving;
 
 function fireButton() {
     if(game.input.activePointer.leftButton.isDown)
@@ -39,7 +63,6 @@ function fireButton() {
 }
 
 function isMoving(dir) {
-    // console.log(player.body.onFloor());
     if(cursors.left.isDown || game.input.keyboard.isDown(Phaser.Keyboard.A))
         if(dir === 'left')return true;
     if(cursors.right.isDown || game.input.keyboard.isDown(Phaser.Keyboard.D))
@@ -48,7 +71,11 @@ function isMoving(dir) {
         if(dir === 'jump')return true;
 }
 
-
+function endGame() {
+    bgmusic.stop();
+    gameover.play();
+    $('.end-game').css('visibility', 'visible');
+}
 
 function createFloor(x, y, w, h) {
     var floor = game.add.sprite(x || 0, y || 575, 'floor');
@@ -59,20 +86,36 @@ function createFloor(x, y, w, h) {
     floors.push(floor);
 }
 function create() {
+    map = game.add.tilemap('map', 32, 32);
+    //  Now add in the tileset
+    map.addTilesetImage('tiles');
+    //  Create our layer
+    floors = map.createLayer(0);
+
+    //  Resize the world
+    floors.resizeWorld();
+    map.setCollisionBetween(0, 213);
+
     socket.emit('creating');
     player = playerManager.createPlayer(player);
-    game.physics.startSystem(Phaser.Physics.ARCADE);
+    playerManager.init();
+    game.world.setBounds(0,0, map.widthInPixels , map.heightInPixels);
+    game.camera.follow(player.sprite);
+    game.camera.focusOnXY(0, 0);
+    // game.camera.deadzone = new Phaser.Rectangle(30, 300, 100, 0);
+    game.physics.startSystem(Phaser.Physics.ARCADE)
     game.time.advancedTiming = true;
     game.stage.disableVisibilityChange = true;
+    bgmusic = game.add.audio('bgmusic')
+    bgmusic.loopFull();
+    bgmusic.volume = VOLUME;
+    gameover = game.add.audio('gameover');
+    gameover.volume = VOLUME;
     cursors = this.input.keyboard.createCursorKeys();
-    createFloor();
-    createFloor(300, 460, 100, 25);
-    createFloor(100, 400, 100, 25);
-    createFloor(400, 300, 100, 25);
-    createFloor(250, 300, 100, 25);
-    createFloor(500, 200, 100, 25);
-    createFloor(600, 400, 100, 25);
     
+}
+function puaseMusic() {
+    bgmusic.stop();
 }
 
 function movePlayer(dir) {
@@ -102,23 +145,11 @@ function movePlayer(dir) {
 }
 
 function hitPlayer(player, bullet) {
-    console.log('hit');
-    player.health -= 10;
-    player.tint = 0x861515;
-    player.hpbar.width -= 5;
-    // player.hpbar.x -= 2.5;
-    setTimeout(function() {
-        player.tint = 0xffffff;
-    }, 100);
-    if(player.health <= 0){
-        playerManager.killPlayer(player.id);
-        socket.emit('kill player', player.id);
-    }
-
+    player.cl.hit(bullet);
     bullet.kill();
 
 }
-function destroyBullet(floor, bullet) {
+function destroyBullet(bullet, floor) {
     bullet.kill();
 }
 var frames = 0;
@@ -127,10 +158,12 @@ function update() {
     frames++;
     var playerSprites = playerManager.getAllPlayerSprites();
         weapons = playerManager.getAllPlayerWeapons(),
+        players = playerManager.allPlayers,
         otherPlayerWeapons = playerManager.getOtherPlayerWeapons(),
         otherPlayerSprites = playerManager.getOtherPlayerSprites();
 
 
+    // game.physics.arcade.collide(player.sprite.weapon, player.bulletBounds, destroyBullet);
     game.physics.arcade.collide(playerSprites, floors);
     game.physics.arcade.collide(weapons, floors, destroyBullet);
     game.physics.arcade.overlap(otherPlayerSprites, player.sprite.weapon , hitPlayer, null, this);
@@ -152,15 +185,19 @@ function update() {
     }
 
         if (fireButton()) {
-            player.fire(game.input.activePointer.position);
-            socket.emit('fire', game.input.activePointer.position);
+            var obj = {x : game.input.activePointer.worldX, y : game.input.activePointer.worldY};
+            player.fire(obj);
+            socket.emit('fire', obj);
         }
 
+    for(var i = 0; i < players.length; i++)
+        players[i].update();
 
 }
 function render() {
     game.debug.text("FPS:", 2, 14, "#ffffff");
     game.debug.text(game.time.fps, 40, 14, "#00ff00");
+    // game.debug.geom(player.bulletBounds, '#0fffff')
     // game.debug.geom(player.getBounds());
 }
 

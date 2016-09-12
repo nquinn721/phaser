@@ -3,28 +3,38 @@ function Player(playerObj, game) {
 	this.y = playerObj.y;
 	this.id = playerObj.id;
 	this.username = playerObj.username;
+	this.game = game;
+
+
 	this.sprite = game.add.sprite(this.x, this.y, 'player');
-    game.physics.enable( this.sprite, Phaser.Physics.ARCADE);
-    console.log(this.username);
+	this.sprite.cl = this;
+    this.sprite.hp = 100;
+    this.sprite.id = this.id;
 
-    
+	game.physics.enable( this.sprite, Phaser.Physics.ARCADE);
 
-	this.fireRate = 200;
-	this.nextFire = 0;
+
+    // Sounds
+	this.jumpSound = game.add.audio('jump');
+	this.jumpSound.volume = VOLUME;
+	this.hitSound = game.add.audio('hitplayer');
+	this.hitSound.volume = VOLUME;
+
+
+
+    // Weapon
+	this.weapon = new Weapon(this);
 }
 
 Player.prototype = {
 	init : function() {
 	    this.animations();
-	    this.sprite.anchor.setTo(.5,.5);
-	    this.sprite.body.collideWorldBounds = true;
-	    this.sprite.body.gravity.y = 1000;
-	    this.sprite.weapon = this.createWeapon(this.sprite);
-	    this.sprite.id = this.id;
-	    this.sprite.health = 100;
-	    this.createHPBar(52, 12, null, null, '#ffffff');
-	    this.sprite.hpbar = this.createHPBar(40, 10, -26, -44);
+	    this.setupBody();
+	    this.setupHP();
 	    this.createName();
+
+	    this.sprite.weapon = this.weapon.create('missle');
+	    
 	    return this.sprite;
 	},
 	move : function(dir) {
@@ -37,18 +47,34 @@ Player.prototype = {
             this.sprite.scale.x = 1;
             this.sprite.animations.play('walk', 30, true);
         } else if(dir === 'jump'){
-            this.sprite.body.velocity.y = -500;
+            this.sprite.body.velocity.y = -600;
+            this.jumpSound.play();
         } else {
             this.sprite.animations.play('stand');
             this.sprite.body.velocity.x = 0;
         }
 		
 	},
+	puaseMusic : function() {
+		this.weapon.sound.volume = 0;
+		this.hitSound.volume = 0;
+		this.jumpSound.volume = 0;
+	},
 
 	animations : function() {
 		this.sprite.animations.add('walk');
 	    this.sprite.animations.add('stand', [4]);
 	    this.sprite.animations.add('jump', [10]);
+	},
+	setupBody : function() {
+		this.sprite.anchor.setTo(.5,.5);
+	    this.sprite.body.collideWorldBounds = true;
+	    this.sprite.body.gravity.y = 1000;
+	},
+	setupHP : function() {
+		this.sprite.health = 100;
+	    this.createHPBar(52, 12, null, null, '#ffffff');
+	    this.sprite.hpbar = this.createHPBar(50, 10, -26, -44);
 	},
 	createName : function() {
 		var style = {font: "12px Arial", fill: "#ffffff"};
@@ -67,27 +93,40 @@ Player.prototype = {
 
 	    return this.sprite.addChild(sp);
 	},
-	createWeapon : function(owner) {
-	    var w = game.add.group();
-	    w.enableBody = true;
-	    w.physicsBodyType = Phaser.Physics.ARCADE;
-	    w.owner = owner;
-	    w.createMultiple(20, 'bullet');
-	    w.setAll('checkWorldBounds', true);
-	    w.setAll('outOfBoundsKill', true);
-	    return w;
+	hit : function(bullet) {
+		console.log(bullet.damage);
+		this.sprite.hp -= bullet.damage;
+		console.log(this.sprite.hp);
+	    this.sprite.tint = 0x861515;
+	    this.hitSound.play();
+	    this.updateHealth();
+	    setTimeout(function() {
+	        this.sprite.tint = 0xffffff;
+	    }.bind(this), 100);
+	    if(this.sprite.hp <= 0){
+	        this.kill();
+	        socket.emit('kill player', this.id);
+	    }	
 	},
 	fire : function(pointer) {
-	    if(game.time.now > this.nextFire && this.sprite.weapon.countDead() > 0){
-	        this.nextFire = game.time.now + this.fireRate;
-	        var bullet = this.sprite.weapon.getFirstDead();
-	        bullet.reset(this.sprite.x, this.sprite.y);
-	        bullet.rotation = game.physics.arcade.angleToXY(bullet, pointer.x, pointer.y);
-	        bullet.owner = this.id;
-	        game.physics.arcade.moveToObject(bullet, pointer, 500);
-	    }
+		this.weapon.fire(pointer);
 	},
 	kill : function() {
 		this.sprite.kill();
+		// endGame();
+	},
+	updateHealth : function(hp) {
+		this.sprite.hpbar.width = (hp || this.sprite.hp) / 2;
+	},
+	updatePosition : function(position) {
+		this.sprite.position.x = position.x;
+		this.sprite.position.y = position.y;
+	},
+	serverUpdate : function(obj) {
+		this.updatePosition(obj.position);
+		this.updateHealth(obj.hp);
+	},
+	update : function() {
+	    // this.bulletBounds = new Phaser.Rectangle(this.sprite.x - 100, this.sprite.y - 100, 200, 200);
 	}
 }

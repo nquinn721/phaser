@@ -8,6 +8,9 @@ function PlayerManager(game) {
 }
 
 PlayerManager.prototype = {
+	init : function() {
+		this.sendPlayerUpdate();	
+	},
 	/**
 	 * @CREATORS
 	 */
@@ -28,11 +31,9 @@ PlayerManager.prototype = {
         return p;
 	},
 	initNewPlayer : function(user) {
-		console.log('INIT NEW Player');
 		var p = new Player(user, this.game);
     	p.init();
         p.sprite.bringToTop();
-
         this.resetPlayerSpriteCollections();
     	return p;	
 	},
@@ -52,6 +53,16 @@ PlayerManager.prototype = {
 		    pl.kill();
 	},
 
+	sendPlayerUpdate : function() {
+		setInterval(function() {
+			socket.emit('player position', {position : this.player.sprite.position, hp : this.player.sprite.hp})
+		}, 200);	
+	},
+	updatePlayer : function(player, position) {
+		var pl = this.getPlayerById(player);
+
+		if(pl)pl.serverUpdate(position);
+	},
 
 	/**
 	 * @GETTERS
@@ -99,6 +110,10 @@ PlayerManager.prototype = {
 		return this.allPlayers;
 	},
 	getPlayerById : function(id) {
+		if(!id)return;
+
+		id = typeof id === 'string' ? id : id.id;
+
 	    for(var i = 0; i < this.allPlayers.length; i++)
 	        if(this.allPlayers[i].id === id)return this.allPlayers[i];
 	}

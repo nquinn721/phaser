@@ -13,7 +13,7 @@ app.get('/', function (req, res) {
 var users = [];
 io.on('connection', function (socket) {
 	socket.on('game', function(username) {
-		this.user = {id : socket.id, x : (users.length * 100) + 100, y : 550, username : username};
+		this.user = {id : socket.id, x : Math.random() * 1900, y : 0, username : username};
 		this.emit('player', this.user);
 		users.push(this.user);
 	});
@@ -23,6 +23,9 @@ io.on('connection', function (socket) {
 	});
 	socket.on('move', function(dir) {
 		this.broadcast.emit('move', this.user, dir);
+	});
+	socket.on('player position', function(position) {
+		this.broadcast.emit('player position', this.user, position);
 	});
 
 	socket.on('fire', function(pointer) {
