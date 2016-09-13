@@ -1,0 +1,1 @@
+var MAP_ELEMENTS = {};

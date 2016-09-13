@@ -31,7 +31,7 @@ Weapon.prototype = {
 	missle : function(w) {
 	    w.createMultiple(3, 'missle');
 	    w.damage = 25;
-	    this.fireRate = 300;
+	    this.fireRate = 600;
 		this.bulletSpeed = 1000;
 		this.sound = game.add.audio('missle');
 		this.sound.volume = VOLUME - 0.1;

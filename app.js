@@ -10,13 +10,38 @@ app.use(express.static(__dirname + '/'));
 app.get('/', function (req, res) {
   res.sendfile(__dirname + '/index.html');
 });
-var users = [];
+var users = [],
+	gameTimer = 15,
+	timer;
 io.on('connection', function (socket) {
+	socket.on('waiting room', function() {
+		
+	});
 	socket.on('game', function(username) {
 		this.user = {id : socket.id, x : Math.random() * 1900, y : 0, username : username};
-		this.emit('player', this.user);
 		users.push(this.user);
+		socket.emit('waiting room');
+		io.emit('waiting room players', users);
+
+		if(users.length >= 2)
+			startTimer();
 	});
+	socket.on('get player', function() {
+		this.emit('player', this.user);
+	});
+	function startTimer() {
+		if(!timer){
+
+			timer = setInterval(function() {
+				io.emit('timer', gameTimer);
+				gameTimer--;
+				if(gameTimer <= 0){
+					io.emit('start game');
+					clearTimeout(timer);
+				}
+			}, 1000);
+		}
+	}
 	socket.on('creating', function() {
 		this.emit('users', getUsersExceptSocket(this));
 		this.broadcast.emit('users', [this.user]);
@@ -44,8 +69,6 @@ io.on('connection', function (socket) {
 	});
 	
 });
-// var Phaser = require('./phaser.node');
-// require('./js/main');
 
 function getUsersExceptSocket(socket) {
 	var u = [];

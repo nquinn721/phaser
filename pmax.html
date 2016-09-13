@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		.search-by-area {
+    background: #eee;
+    width: 250px;
+    height: 150px;
+    padding: 5px;
+    margin: 0 0 10px 0;
+    display: flex;
+    justify-content: center;
+
+  .search-by-area-content div {margin: 18px;}
+
+  .zip-search input {width: 50%;float: right;}
+
+  .radius select {
+      background: white;
+      width: 50%;
+      float: right;
+  }
+
+
+  .search input {
+      width: 100%;
+      padding: 5px;
+      color: white;
+      border-radius: 5px;
+      border: 1px solid #ffa84c;
+      background: #ffa84c; /* Old browsers */
+      background: -moz-linear-gradient(top,  #ffa84c 0%, #ff7b0d 100%); /* FF3.6-15 */
+      background: -webkit-linear-gradient(top,  #ffa84c 0%,#ff7b0d 100%); /* Chrome10-25,Safari5.1-6 */
+      background: linear-gradient(to bottom,  #ffa84c 0%,#ff7b0d 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+      filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffa84c', endColorstr='#ff7b0d',GradientType=0 ); /* IE6-9 */
+  }
+}
+	</style>
+</head>
+<body>
+	<div class="search-by-area">
+        <div class="search-by-area-content" style="">
+            <div class="zip-search">
+                <span>ZIP</span>
+                <input type="text">
+            </div>
+            <div class="radius">
+                <span>Radius</span>
+                <select name="radius" id="radius">
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="75">75</option>
+                    <option value="100">100</option>
+                    <option value="200">200</option>
+                    <option value="500">500</option>
+                    <option value="nationwide">Nationwide</option>
+                </select>
+            </div>
+            <div class="search">
+                <input type="button" value="Search">
+            </div>
+        </div>
+    </div>
+</body>
+</html>

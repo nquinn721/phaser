@@ -33,7 +33,7 @@ Player.prototype = {
 	    this.setupHP();
 	    this.createName();
 
-	    this.sprite.weapon = this.weapon.create('missle');
+	    this.sprite.weapon = this.weapon.create('bullet');
 	    
 	    return this.sprite;
 	},
@@ -72,7 +72,7 @@ Player.prototype = {
 	    this.sprite.body.gravity.y = 1000;
 	},
 	setupHP : function() {
-		this.sprite.health = 100;
+		this.sprite.hp = 100;
 	    this.createHPBar(52, 12, null, null, '#ffffff');
 	    this.sprite.hpbar = this.createHPBar(50, 10, -26, -44);
 	},
@@ -99,7 +99,7 @@ Player.prototype = {
 		console.log(this.sprite.hp);
 	    this.sprite.tint = 0x861515;
 	    this.hitSound.play();
-	    this.updateHealth();
+	    this.updateHP();
 	    setTimeout(function() {
 	        this.sprite.tint = 0xffffff;
 	    }.bind(this), 100);
@@ -115,7 +115,7 @@ Player.prototype = {
 		this.sprite.kill();
 		// endGame();
 	},
-	updateHealth : function(hp) {
+	updateHP : function(hp) {
 		this.sprite.hpbar.width = (hp || this.sprite.hp) / 2;
 	},
 	updatePosition : function(position) {
@@ -124,7 +124,7 @@ Player.prototype = {
 	},
 	serverUpdate : function(obj) {
 		this.updatePosition(obj.position);
-		this.updateHealth(obj.hp);
+		this.updateHP(obj.hp);
 	},
 	update : function() {
 	    // this.bulletBounds = new Phaser.Rectangle(this.sprite.x - 100, this.sprite.y - 100, 200, 200);

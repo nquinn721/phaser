@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Phaser</title>
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
+	<link rel="stylesheet" href="css/bootstrap.css"/>
 	<style>
 		.splash {
 		    background: rgba(0,0,0,0.4);
@@ -57,9 +57,53 @@
 		    display: none;
 		    color: red;
 		}
+		.waiting-room {
+			visibility: hidden;
+		    width: 100%;
+		    height: 100%;
+		    position: absolute;
+		    z-index: 999;
+		    background: #222;
+		    display: flex;
+		    align-items: center;
+		    justify-content: center;
+		}
+		.waiting-room .content {
+		    background: #d4d0d0;
+		    padding: 10px;
+		    width: 600px;
+		    height: 500px;
+		    border-radius: 10px;
+		    box-shadow: 0 0 18px 4px black;
+		}
+
+		.waiting-room .title {
+		    height: 50px;
+		    border-bottom: 1px solid #757575;
+		    font-size: 25px;
+		    color: #555;
+		}
+
+		.waiting-room .players {
+		    border-top: 1px solid #ffffff;
+		}
+		.waiting-room .title .countdown {
+		    float: right;
+		    margin-right: 10px;
+		    color: #e04a4a;
+		}
 	</style>
 </head>
 <body>
+<div class="waiting-room">
+	<div class="content">
+		<div class="title">
+			Waiting to start game...
+			<span class="countdown"><span>15</span>s</span>
+		</div>
+		<div class="players"></div>
+	</div>
+</div>
 <div class="end-game">
 		<div>
 			Game Over!
@@ -78,10 +122,15 @@
 	<input type="button" class="pause" value="Pause">
 	
 </div>
-<script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+<script src="js/lib/jquery.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script src="js/phaser.js"></script>
+<script src="js/global.js"></script>
+<script src="js/mapElements/element.js"></script>
+<script src="js/mapElements/floor.js"></script>
+<script src="js/map.js"></script>
 <script src="js/socket.js"></script>
+<script src="js/waitingRoom.js"></script>
 <script src="js/weapon.js"></script>
 <script src="js/player.js"></script>
 <script src="js/playerManager.js"></script>

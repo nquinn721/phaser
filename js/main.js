@@ -11,19 +11,40 @@ $('.login input').on('keyup', function(e) {
         $('.splash').hide();
     }
 }).focus();
+
+
+if(DEBUG.AUTO_LOGIN){
+    $('.splash').hide();
+    socket.emit('game', DEBUG.LOGIN_NAME);
+}
+
+
 $('.pause').on('click', function() {
-    // player.puaseMusic();
+    pauseAllSounds();
+});
+
+
+
+
+function pauseAllSounds() {
     var players = playerManager.allPlayers;
     for(var i = 0; i < players.length; i++)
         players[i].puaseMusic();
-    puaseMusic();
-});
+    pauseMusic();
+}
+
+
 var playerManager;
+
+socket.on('start game', function(user) {
+    socket.emit('get player');
+});
+
 socket.on('player', function(user) {
-    game = new Phaser.Game(1200, 700, Phaser.AUTO, 'wrapper', { preload: preload, create: create, update: update, render: render });
+    wr.hide();
+    game = new Phaser.Game(1200, 700, Phaser.CANVAS/*Phaser.AUTO*/, 'wrapper', { preload: preload, create: create, update: update, render: render });
     playerManager = new PlayerManager(game);
     player = user;
-
 
 });
 function preload() {
@@ -34,8 +55,7 @@ function preload() {
     game.load.image('missle', 'img/missle.png');
 
     game.load.image('ship', 'img/thrust_ship.png');
-    game.load.image('floor', 'img/floor.jpg');
-    game.load.image('hp', 'img/health.png');
+    game.load.image('marbleFloor', 'img/floor.jpg');
     game.load.spritesheet('player', 'img/mummy.png', 37, 45, 18);
     game.load.audio('laser', ['sound/laser.mp3', 'sound/laser.ogg']);
     game.load.audio('missle', ['sound/missle.mp3', 'sound/missle.ogg']);
@@ -52,7 +72,6 @@ var player;
 var bgmusic, gameover;
 var map;
 
-var floors = [];
 var standing, walking, walkingLeft, walkingRight, jumping, moving;
 
 function fireButton() {
@@ -77,29 +96,16 @@ function endGame() {
     $('.end-game').css('visibility', 'visible');
 }
 
-function createFloor(x, y, w, h) {
-    var floor = game.add.sprite(x || 0, y || 575, 'floor');
-    game.physics.enable(floor, Phaser.Physics.ARCADE);
-    floor.body.immovable = true;
-    floor.width = w || 800;
-    floor.height = h || 25;
-    floors.push(floor);
-}
+
 function create() {
-    map = game.add.tilemap('map', 32, 32);
-    //  Now add in the tileset
-    map.addTilesetImage('tiles');
-    //  Create our layer
-    floors = map.createLayer(0);
-
-    //  Resize the world
-    floors.resizeWorld();
-    map.setCollisionBetween(0, 213);
-
+    map = new Map;
+    map.init();
     socket.emit('creating');
     player = playerManager.createPlayer(player);
     playerManager.init();
-    game.world.setBounds(0,0, map.widthInPixels , map.heightInPixels);
+    game.world.setBounds(0,0, map.map.w , map.map.h);
+    // game.world.setBounds(0,0, 1600 , 1200);
+
     game.camera.follow(player.sprite);
     game.camera.focusOnXY(0, 0);
     // game.camera.deadzone = new Phaser.Rectangle(30, 300, 100, 0);
@@ -112,9 +118,14 @@ function create() {
     gameover = game.add.audio('gameover');
     gameover.volume = VOLUME;
     cursors = this.input.keyboard.createCursorKeys();
+
+
+    if(DEBUG.NO_SOUNDS)
+        pauseAllSounds();
     
 }
-function puaseMusic() {
+
+function pauseMusic() {
     bgmusic.stop();
 }
 
@@ -163,9 +174,8 @@ function update() {
         otherPlayerSprites = playerManager.getOtherPlayerSprites();
 
 
-    // game.physics.arcade.collide(player.sprite.weapon, player.bulletBounds, destroyBullet);
-    game.physics.arcade.collide(playerSprites, floors);
-    game.physics.arcade.collide(weapons, floors, destroyBullet);
+    game.physics.arcade.collide(playerSprites, map.elements, map.playerHitElement);
+    game.physics.arcade.collide(weapons, map.elements, map.bulletHitElement);
     game.physics.arcade.overlap(otherPlayerSprites, player.sprite.weapon , hitPlayer, null, this);
     game.physics.arcade.overlap(player.sprite, otherPlayerWeapons, hitPlayer, null, this);
     

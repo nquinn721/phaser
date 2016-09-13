@@ -5,6 +5,7 @@ function Sockets() {
 
 Sockets.prototype = {
     init : function() {
+        console.log('socket init');
         socket.on('move', this.handleSocketEvent.bind(this, 'move'));
         socket.on('fire', this.handleSocketEvent.bind(this, 'fire'));
         socket.on('kill player', this.handleSocketEvent.bind(this, 'killPlayer'));
