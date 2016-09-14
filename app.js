@@ -2,6 +2,7 @@ var express = require('express');
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
+var fs = require('fs');
 
 server.listen(3000);
 
@@ -13,7 +14,11 @@ app.get('/', function (req, res) {
 var users = [],
 	gameTimer = 15,
 	timer;
+var map = fs.readFileSync('tilemaps/tilemap.js', 'utf-8');
+console.log(map);
 io.on('connection', function (socket) {
+	io.emit('map', map);
+
 	socket.on('waiting room', function() {
 		
 	});
@@ -28,6 +33,7 @@ io.on('connection', function (socket) {
 	});
 	socket.on('get player', function() {
 		this.emit('player', this.user);
+		console.log('sending');
 	});
 	function startTimer() {
 		if(!timer){

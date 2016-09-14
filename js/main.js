@@ -35,9 +35,13 @@ function pauseAllSounds() {
 
 
 var playerManager;
-
+var tileset;
 socket.on('start game', function(user) {
     socket.emit('get player');
+});
+
+socket.on('map', function(t) {
+    tileset = t;
 });
 
 socket.on('player', function(user) {
@@ -55,7 +59,7 @@ function preload() {
     game.load.image('missle', 'img/missle.png');
 
     game.load.image('ship', 'img/thrust_ship.png');
-    game.load.image('marbleFloor', 'img/floor.jpg');
+    game.load.image('marblefloor', 'img/floor.jpg');
     game.load.spritesheet('player', 'img/mummy.png', 37, 45, 18);
     game.load.audio('laser', ['sound/laser.mp3', 'sound/laser.ogg']);
     game.load.audio('missle', ['sound/missle.mp3', 'sound/missle.ogg']);
@@ -98,7 +102,7 @@ function endGame() {
 
 
 function create() {
-    map = new Map;
+    map = new Map(tileset);
     map.init();
     socket.emit('creating');
     player = playerManager.createPlayer(player);

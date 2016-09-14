@@ -1,7 +1,9 @@
-function Map() {
-	this.map = {data: [{x: 0, y : 1175, w: 1800, h: 25, el : 'floor', sprite: 'marbleFloor'}], w: 1800, h: 1200};
 
+function Map(tileset) {
+	// console.log(tileset);
+	this.map = JSON.parse(tileset);//{data: [{x: 0, y : 1175, w: 1800, h: 25, el : 'floor', sprite: 'marbleFloor'}], w: 1800, h: 1200};
 	this.elements = [];
+	
 }	
 
 

@@ -5,6 +5,7 @@ MAP_ELEMENTS.floor = function() {
 MAP_ELEMENTS.floor.prototype = {
 	init : function(fl) {
 		this.floor = game.add.sprite(fl.x || 0, fl.y || 575, fl.sprite || 'floor');
+		console.log(this.floor);
 		game.physics.enable(this.floor, Phaser.Physics.ARCADE);
 	    this.floor.body.immovable = true;
 	    this.floor.width = fl.w || 800;
