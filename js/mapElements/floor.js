@@ -14,6 +14,7 @@ MAP_ELEMENTS.floor.prototype = {
 	    return this.floor;
 	},
 	playerHitElement : function(floor, player) {
+		console.log(floor, player);		
 		// floor.body.velocity.y = 100;
 		// console.log('player hit floor', player, floor);
 	},
