@@ -60,6 +60,7 @@ function preload() {
 
     game.load.image('ship', 'img/thrust_ship.png');
     game.load.image('marblefloor', 'img/floor.jpg');
+    game.load.image('box', 'img/box.jpg');
     game.load.spritesheet('player', 'img/mummy.png', 37, 45, 18);
     game.load.audio('laser', ['sound/laser.mp3', 'sound/laser.ogg']);
     game.load.audio('missle', ['sound/missle.mp3', 'sound/missle.ogg']);
