@@ -33,7 +33,7 @@ Player.prototype = {
 	    this.setupHP();
 	    this.createName();
 
-	    this.sprite.weapon = this.weapon.create('bullet');
+	    this.sprite.weapon = this.weapon.create('missle');
 	    
 	    return this.sprite;
 	},
