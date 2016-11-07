@@ -15,7 +15,6 @@ var users = [],
 	gameTimer = 15,
 	timer;
 var map = fs.readFileSync('tilemaps/tilemap.js', 'utf-8');
-console.log(map);
 io.on('connection', function (socket) {
 	io.emit('map', map);
 

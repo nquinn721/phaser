@@ -57,6 +57,7 @@ function preload() {
 
     game.load.image('bullet', 'img/bullet.png');
     game.load.image('missle', 'img/missle.png');
+    game.load.image('rocketweaponicon', 'img/rocketWeaponIcon.png');
 
     game.load.image('ship', 'img/thrust_ship.png');
     game.load.image('marblefloor', 'img/floor.jpg');
